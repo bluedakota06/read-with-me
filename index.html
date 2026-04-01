@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Read With Me – Word Pronunciation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --primary: #4f6ef7;
+      --primary-hover: #3a57e8;
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+      --danger: #ef4444;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    header p {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* ── Input panel ─────────────────────────────────────────── */
+    .input-panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .input-panel h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      font-family: inherit;
+      resize: vertical;
+      outline: none;
+      color: var(--text);
+      transition: border-color .2s;
+    }
+    textarea:focus { border-color: var(--primary); }
+    textarea::placeholder { color: #aab4c4; }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      padding: 8px 16px;
+      border: 1.5px dashed var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: border-color .2s, color .2s;
+      user-select: none;
+    }
+    .file-label:hover { border-color: var(--primary); color: var(--primary); }
+    .file-label input { display: none; }
+    #file-name { font-size: 0.85rem; color: var(--muted); align-self: center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--accent); color: #fff; }
+    .btn-success:hover { background: var(--accent-hover); }
+    .btn-danger  { background: var(--danger); color: #fff; }
+    .btn-ghost   { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+
+    /* ── Controls bar ────────────────────────────────────────── */
+    .controls {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .controls label { font-size: 0.9rem; color: var(--muted); }
+    .controls select, .controls input[type=range] {
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .controls select:focus { border-color: var(--primary); }
+    #speed-val { font-size: 0.85rem; color: var(--primary); font-weight: 600; min-width: 32px; }
+
+    .spacer { flex: 1; }
+
+    #status {
+      font-size: 0.88rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Word grid ───────────────────────────────────────────── */
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .word-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: border-color .2s, box-shadow .15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .word-card.playing {
+      border-color: var(--accent);
+      background: #f0fdf4;
+    }
+    @keyframes pulse {
+      from { box-shadow: 0 0 0 0 rgba(34,197,94,.3); }
+      to   { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+    }
+    .word-card.playing { animation: pulse 1s ease-in-out infinite alternate; }
+
+    /* top row: word + play button */
+    .card-top {
+      display: flex;
+      align-items: center;
+      padding: 14px 14px 10px;
+      gap: 10px;
+    }
+    .word-index {
+      font-size: 0.7rem;
+      color: var(--border);
+      font-weight: 600;
+      min-width: 18px;
+    }
+    .word-text {
+      font-size: 1.1rem;
+      font-weight: 700;
+      flex: 1;
+      word-break: break-word;
+    }
+    .btn-play-word {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+      line-height: 1;
+      transition: transform .15s;
+      color: var(--muted);
+    }
+    .btn-play-word:hover { transform: scale(1.2); color: var(--accent); }
+    .word-card.playing .btn-play-word { color: var(--accent); }
+
+    /* examples toggle button */
+    .btn-examples {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      border-top: 1.5px solid var(--border);
+      width: 100%;
+      padding: 7px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      cursor: pointer;
+      text-align: left;
+      transition: background .15s, color .15s;
+    }
+    .btn-examples:hover { background: #f8fafc; color: var(--primary); }
+    .btn-examples .chevron {
+      margin-left: auto;
+      transition: transform .2s;
+      font-style: normal;
+    }
+    .btn-examples.open .chevron { transform: rotate(180deg); }
+
+    /* sentences panel */
+    .sentences-panel {
+      display: none;
+      border-top: 1.5px solid var(--border);
+      padding: 10px 14px 14px;
+      background: #fafbff;
+    }
+    .sentences-panel.visible { display: block; }
+
+    .sentence-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sentence-row:last-child { border-bottom: none; }
+    .sentence-text {
+      flex: 1;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .sentence-text em {
+      font-style: normal;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .btn-play-sentence {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 2px;
+      flex-shrink: 0;
+      transition: color .15s, transform .15s;
+      line-height: 1;
+    }
+    .btn-play-sentence:hover { color: var(--accent); transform: scale(1.2); }
+    .btn-play-sentence.playing { color: var(--accent); }
+
+    .sentences-empty {
+      font-size: 0.83rem;
+      color: var(--muted);
+      padding: 4px 0 8px;
+    }
+
+    .btn-delete-sentence {
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: #cbd5e1;
+      padding: 2px 3px;
+      flex-shrink: 0;
+      line-height: 1;
+      transition: color .15s;
+    }
+    .btn-delete-sentence:hover { color: var(--danger); }
+
+    .sentence-source {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* add-sentence input row */
+    .add-sentence-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .add-sentence-row-inputs {
+      display: flex;
+      gap: 6px;
+    }
+    .add-sentence-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+      color: var(--text);
+      transition: border-color .2s;
+    }
+    .add-sentence-input:focus { border-color: var(--primary); }
+    .add-sentence-input::placeholder { color: #aab4c4; }
+    .add-source-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 0.82rem;
+      background: var(--card);
+      outline: none;
+      color: var(--text);
+      transition: border-color .2s;
+    }
+    .add-source-input:focus { border-color: var(--primary); }
+    .add-source-input::placeholder { color: #aab4c4; }
+    .btn-add-sentence {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .2s;
+    }
+    .btn-add-sentence:hover { background: var(--primary-hover); }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.95rem; }
+
+    /* ── Saved Words panel ───────────────────────────────────── */
+    .saved-panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-top: 28px;
+      overflow: hidden;
+    }
+    .saved-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      text-align: left;
+      transition: background .15s;
+    }
+    .saved-toggle:hover { background: #f8fafc; }
+    .saved-toggle .chevron {
+      margin-left: auto;
+      font-style: normal;
+      font-size: 1rem;
+      color: var(--muted);
+      transition: transform .2s;
+    }
+    .saved-toggle.open .chevron { transform: rotate(180deg); }
+
+    .saved-content {
+      border-top: 1.5px solid var(--border);
+      padding: 16px 20px 20px;
+    }
+    .saved-empty {
+      font-size: 0.88rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .saved-word-block {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .saved-word-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: #fafbff;
+      transition: background .15s;
+    }
+    .saved-word-header:hover { background: #f1f5ff; }
+    .saved-word-name {
+      font-weight: 700;
+      font-size: 1rem;
+      flex: 1;
+    }
+    .saved-word-count {
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--bg);
+      border-radius: 20px;
+      padding: 2px 8px;
+    }
+    .saved-word-chevron {
+      font-style: normal;
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: transform .2s;
+    }
+    .saved-word-header.open .saved-word-chevron { transform: rotate(180deg); }
+    .btn-delete-word {
+      background: none;
+      border: none;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      padding: 2px 4px;
+      transition: color .15s;
+    }
+    .btn-delete-word:hover { color: var(--danger); }
+
+    .saved-word-sentences {
+      display: none;
+      padding: 8px 14px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .saved-word-sentences.visible { display: block; }
+
+    .saved-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+    .btn-clear-all {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 14px;
+      font-size: 0.83rem;
+      color: var(--danger);
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-clear-all:hover { background: #fff1f1; border-color: var(--danger); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Read With Me</h1>
+    <p>Add words below — click 🔊 to hear a word, or 📖 to add & play example sentences.</p>
+  </header>
+
+  <!-- Input panel -->
+  <div class="input-panel">
+    <h2>Words</h2>
+    <textarea
+      id="word-input"
+      placeholder="Type words separated by spaces, commas, or new lines&#10;e.g.  apple  banana  &quot;Chateau Frontenac&quot;  &quot;你好&quot;  &quot;北京&quot;"
+    ></textarea>
+    <div class="row">
+      <label class="file-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload .txt / .csv
+        <input type="file" id="file-input" accept=".txt,.csv,.text" />
+      </label>
+      <span id="file-name"></span>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="clear-btn">Clear</button>
+      <button class="btn btn-primary" id="load-btn">Load Words</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls" id="controls-bar" style="display:none;">
+    <label for="voice-select">EN Voice</label>
+    <select id="voice-select"></select>
+
+    <label for="zh-voice-select" id="zh-voice-label" style="display:none;">ZH Voice</label>
+    <select id="zh-voice-select" style="display:none;"></select>
+
+    <label for="speed-range">Speed</label>
+    <input type="range" id="speed-range" min="0.5" max="2" step="0.1" value="0.9" />
+    <span id="speed-val">0.9×</span>
+
+    <div class="spacer"></div>
+    <span id="status"></span>
+    <button class="btn btn-success" id="play-all-btn">▶ Play All</button>
+    <button class="btn btn-danger" id="stop-btn" style="display:none;">■ Stop</button>
+  </div>
+
+  <!-- Word grid -->
+  <div class="word-grid" id="word-grid">
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="icon">🔤</div>
+      <p>No words loaded yet.<br>Enter or upload a list above.</p>
+    </div>
+  </div>
+
+  <!-- Saved Words panel -->
+  <div class="saved-panel" id="saved-panel">
+    <button class="saved-toggle" id="saved-toggle">
+      <span id="saved-toggle-label">💾 Saved sentences</span>
+      <i class="chevron">▾</i>
+    </button>
+    <div class="saved-content" id="saved-content" style="display:none;"></div>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────
+  let words = [];
+  let voices = [];
+  let zhVoices = [];
+  let currentUtterance = null;
+  let playAllIndex = -1;
+  let isPlayingAll = false;
+
+  // ── Elements ───────────────────────────────────────────────
+  const wordInput   = document.getElementById('word-input');
+  const fileInput   = document.getElementById('file-input');
+  const fileName    = document.getElementById('file-name');
+  const clearBtn    = document.getElementById('clear-btn');
+  const loadBtn     = document.getElementById('load-btn');
+  const voiceSelect = document.getElementById('voice-select');
+  const speedRange  = document.getElementById('speed-range');
+  const speedVal    = document.getElementById('speed-val');
+  const playAllBtn  = document.getElementById('play-all-btn');
+  const stopBtn     = document.getElementById('stop-btn');
+  const statusEl    = document.getElementById('status');
+  const controlsBar = document.getElementById('controls-bar');
+  const wordGrid    = document.getElementById('word-grid');
+
+  // ── Speech voices ──────────────────────────────────────────
+  const zhVoiceLabel  = document.getElementById('zh-voice-label');
+  const zhVoiceSelect = document.getElementById('zh-voice-select');
+
+  function loadVoices() {
+    const all = speechSynthesis.getVoices();
+    voices   = all.filter(v => v.lang.startsWith('en'));
+    if (!voices.length) voices = all.filter(v => !v.lang.startsWith('zh'));
+    zhVoices = all.filter(v => v.lang.startsWith('zh'));
+
+    voiceSelect.innerHTML = '';
+    voices.forEach((v, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${v.name} (${v.lang})`;
+      voiceSelect.appendChild(opt);
+    });
+    // prefer a US English voice
+    const preferred = voices.findIndex(v => v.lang === 'en-US' && v.name.toLowerCase().includes('google'));
+    const fallback  = voices.findIndex(v => v.lang === 'en-US');
+    if (preferred >= 0) voiceSelect.value = preferred;
+    else if (fallback >= 0) voiceSelect.value = fallback;
+
+    // populate Chinese voice selector
+    if (zhVoices.length) {
+      zhVoiceSelect.innerHTML = '';
+      zhVoices.forEach((v, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${v.name} (${v.lang})`;
+        zhVoiceSelect.appendChild(opt);
+      });
+      const zhPref = zhVoices.findIndex(v => v.lang === 'zh-CN');
+      if (zhPref >= 0) zhVoiceSelect.value = zhPref;
+      zhVoiceLabel.style.display = '';
+      zhVoiceSelect.style.display = '';
+    } else {
+      zhVoiceLabel.style.display = 'none';
+      zhVoiceSelect.style.display = 'none';
+    }
+  }
+
+  // returns true if text contains CJK characters
+  function isChinese(text) {
+    return /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text);
+  }
+
+  // picks the right voice for a piece of text
+  function getVoice(text) {
+    if (isChinese(text)) return zhVoices[zhVoiceSelect.value] || null;
+    return voices[voiceSelect.value] || null;
+  }
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+
+  // ── Speed control ──────────────────────────────────────────
+  speedRange.addEventListener('input', () => {
+    speedVal.textContent = parseFloat(speedRange.value).toFixed(1) + '×';
+  });
+
+  // ── File upload ────────────────────────────────────────────
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) return;
+    fileName.textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = e => {
+      wordInput.value = (wordInput.value.trim() ? wordInput.value + '\n' : '') + e.target.result;
+    };
+    reader.readAsText(file);
+  });
+
+  // ── Parse words ────────────────────────────────────────────
+  // Quoted phrases (e.g. "Chateau Frontenac" or "你好") are kept as one entry.
+  // Chinese words must be quoted since they have no space delimiters.
+  const CJK = '\u4e00-\u9fff\u3400-\u4dbf';
+  function parseWords(text) {
+    const results = [];
+    const re = /"([^"]+)"|([^\s,;|\n\r"]+)/g;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      if (m[1] !== undefined) {
+        // quoted phrase — preserve CJK chars, spaces, apostrophes, hyphens
+        const phrase = m[1]
+          .replace(new RegExp(`[^a-zA-Z${CJK} '\\-]`, 'g'), '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (phrase) results.push(phrase);
+      } else {
+        // unquoted token — preserve CJK chars, apostrophes, hyphens
+        const w = m[2].replace(new RegExp(`[^a-zA-Z${CJK}'\\-]`, 'g'), '').trim();
+        if (w) results.push(w);
+      }
+    }
+    return results;
+  }
+
+  // ── Clear ──────────────────────────────────────────────────
+  clearBtn.addEventListener('click', () => {
+    stopAll();
+    wordInput.value = '';
+    fileName.textContent = '';
+    fileInput.value = '';
+    words = [];
+    renderGrid();
+    controlsBar.style.display = 'none';
+  });
+
+  // ── Load words ─────────────────────────────────────────────
+  loadBtn.addEventListener('click', () => {
+    stopAll();
+    words = parseWords(wordInput.value);
+    renderGrid();
+    controlsBar.style.display = words.length ? 'flex' : 'none';
+    if (words.length) setStatus(`${words.length} word${words.length > 1 ? 's' : ''} loaded`);
+  });
+
+  // ── Sentence storage (localStorage) ────────────────────────
+  // { word: [{text, source}, ...] }  (legacy: plain strings also accepted)
+  const STORAGE_KEY = 'rwm_sentences';
+  let sentencesDB = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+  function sentenceText(s)   { return typeof s === 'string' ? s : s.text; }
+  function sentenceSource(s) { return typeof s === 'string' ? '' : (s.source || ''); }
+
+  function saveSentencesDB() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sentencesDB));
+    renderSavedPanel();
+  }
+  function getSentences(word) {
+    return sentencesDB[word.toLowerCase()] || [];
+  }
+  function addSentence(word, text, source) {
+    const key = word.toLowerCase();
+    if (!sentencesDB[key]) sentencesDB[key] = [];
+    sentencesDB[key].push({ text, source: source || '' });
+    saveSentencesDB();
+  }
+  function deleteSentence(word, idx) {
+    const key = word.toLowerCase();
+    if (sentencesDB[key]) {
+      sentencesDB[key].splice(idx, 1);
+      if (!sentencesDB[key].length) delete sentencesDB[key];
+      saveSentencesDB();
+    }
+  }
+
+  // ── Render grid ────────────────────────────────────────────
+  function renderGrid() {
+    wordGrid.innerHTML = '';
+    if (!words.length) {
+      wordGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="icon">🔤</div>
+        <p>No words loaded yet.<br>Enter or upload a list above.</p>
+      </div>`;
+      return;
+    }
+    words.forEach((word, i) => {
+      const card = document.createElement('div');
+      card.className = 'word-card';
+      card.dataset.index = i;
+      card.innerHTML = `
+        <div class="card-top">
+          <span class="word-index">${i + 1}</span>
+          <span class="word-text">${escHtml(word)}</span>
+          <button class="btn-play-word" title="Pronounce">🔊</button>
+        </div>
+        <button class="btn-examples">
+          <span>📖 Example sentences</span>
+          <i class="chevron">▾</i>
+        </button>
+        <div class="sentences-panel"></div>
+      `;
+
+      card.querySelector('.btn-play-word').addEventListener('click', e => {
+        e.stopPropagation();
+        if (isPlayingAll) stopAll();
+        speakWord(word, i);
+      });
+
+      const exBtn = card.querySelector('.btn-examples');
+      const panel = card.querySelector('.sentences-panel');
+      updateExBtn(word, exBtn);
+      exBtn.addEventListener('click', () => {
+        const isOpen = exBtn.classList.toggle('open');
+        panel.classList.toggle('visible', isOpen);
+        if (isOpen) renderSentencePanel(word, panel, exBtn);
+      });
+
+      wordGrid.appendChild(card);
+    });
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Update toggle button label ───────────────────────────────
+  function updateExBtn(word, btn) {
+    const count = getSentences(word).length;
+    const label = btn.querySelector('span');
+    label.textContent = count
+      ? `📖 ${count} sentence${count > 1 ? 's' : ''}`
+      : '📖 Add example sentences';
+  }
+
+  // ── Render sentences panel ───────────────────────────────────
+  function renderSentencePanel(word, panel, exBtn) {
+    const sentences = getSentences(word);
+
+    const listHTML = sentences.length
+      ? sentences.map((s, idx) => {
+          const highlighted = highlightWord(escHtml(sentenceText(s)), word);
+          const src = sentenceSource(s);
+          return `<div class="sentence-row">
+            <button class="btn-play-sentence" data-idx="${idx}" title="Play">🔊</button>
+            <span class="sentence-text">${highlighted}${src ? `<span class="sentence-source"> — ${escHtml(src)}</span>` : ''}</span>
+            <button class="btn-delete-sentence" data-idx="${idx}" title="Delete">✕</button>
+          </div>`;
+        }).join('')
+      : '<div class="sentences-empty">No sentences yet — add one below.</div>';
+
+    panel.innerHTML = `
+      ${listHTML}
+      <div class="add-sentence-row">
+        <input class="add-sentence-input" type="text"
+          placeholder="Type a sentence using &quot;${escHtml(word)}&quot;…" />
+        <div class="add-sentence-row-inputs">
+          <input class="add-source-input" type="text" list="sources-datalist-${escHtml(word)}"
+            placeholder="Source — optional (e.g. The New York Times, Mar 22, 2026)" />
+          <datalist id="sources-datalist-${escHtml(word)}">
+            ${getUniqueSources().map(src => `<option value="${escHtml(src)}">`).join('')}
+          </datalist>
+          <button class="btn-add-sentence">Add</button>
+        </div>
+      </div>`;
+
+    // play buttons
+    panel.querySelectorAll('.btn-play-sentence').forEach(btn => {
+      const idx = +btn.dataset.idx;
+      btn.addEventListener('click', () => {
+        if (isPlayingAll) stopAll();
+        speakSentence(sentenceText(getSentences(word)[idx]), btn);
+      });
+    });
+
+    // delete buttons
+    panel.querySelectorAll('.btn-delete-sentence').forEach(btn => {
+      btn.addEventListener('click', () => {
+        deleteSentence(word, +btn.dataset.idx);
+        renderSentencePanel(word, panel, exBtn);
+        updateExBtn(word, exBtn);
+      });
+    });
+
+    // add sentence
+    const input = panel.querySelector('.add-sentence-input');
+    const sourceInput = panel.querySelector('.add-source-input');
+    const addBtn = panel.querySelector('.btn-add-sentence');
+    const doAdd = () => {
+      const text = input.value.trim();
+      if (!text) return;
+      const source = sourceInput.value.trim();
+      addSentence(word, text, source);
+      input.value = '';
+      sourceInput.value = '';
+      renderSentencePanel(word, panel, exBtn);
+      updateExBtn(word, exBtn);
+    };
+    addBtn.addEventListener('click', doAdd);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') sourceInput.focus(); });
+    sourceInput.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  }
+
+  function escRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  // Highlight the target word inside an already-HTML-escaped sentence string.
+  // Uses \b word boundaries for Latin text; plain substring match for Chinese.
+  function highlightWord(escapedSentence, word) {
+    const escapedWord = escHtml(escRegex(word));
+    if (isChinese(word)) {
+      return escapedSentence.replace(new RegExp(escapedWord, 'g'), '<em>$&</em>');
+    }
+    return escapedSentence.replace(new RegExp(`\\b(${escapedWord})\\b`, 'gi'), '<em>$1</em>');
+  }
+
+  // ── Speak sentence ──────────────────────────────────────────
+  function speakSentence(text, btn) {
+    speechSynthesis.cancel();
+    clearPlaying();
+    document.querySelectorAll('.btn-play-sentence.playing').forEach(b => b.classList.remove('playing'));
+
+    const utter = new SpeechSynthesisUtterance(text);
+    const voice = getVoice(text);
+    if (voice) utter.voice = voice;
+    utter.rate = parseFloat(speedRange.value);
+
+    btn.classList.add('playing');
+    utter.onend = utter.onerror = () => btn.classList.remove('playing');
+
+    setStatus('Playing sentence…');
+    speechSynthesis.speak(utter);
+  }
+
+  // ── Speak single word ──────────────────────────────────────
+  function speakWord(word, index) {
+    speechSynthesis.cancel();
+    clearPlaying();
+
+    const utter = new SpeechSynthesisUtterance(word);
+    const voice = getVoice(word);
+    if (voice) utter.voice = voice;
+    utter.rate = parseFloat(speedRange.value);
+    utter.pitch = 1;
+
+    const card = wordGrid.querySelector(`[data-index="${index}"]`);
+    if (card) card.classList.add('playing');
+
+    utter.onend = () => {
+      if (card) card.classList.remove('playing');
+      if (isPlayingAll) playNext(index + 1);
+    };
+    utter.onerror = () => {
+      if (card) card.classList.remove('playing');
+    };
+
+    currentUtterance = utter;
+    setStatus(`Playing: ${word}`);
+    speechSynthesis.speak(utter);
+  }
+
+  function clearPlaying() {
+    document.querySelectorAll('.word-card.playing').forEach(c => c.classList.remove('playing'));
+  }
+
+  // ── Play All ───────────────────────────────────────────────
+  playAllBtn.addEventListener('click', () => {
+    if (!words.length) return;
+    isPlayingAll = true;
+    playAllBtn.style.display = 'none';
+    stopBtn.style.display = 'inline-flex';
+    speakWord(words[0], 0);
+  });
+
+  function playNext(i) {
+    if (!isPlayingAll || i >= words.length) {
+      endPlayAll();
+      return;
+    }
+    playAllIndex = i;
+    speakWord(words[i], i);
+  }
+
+  stopBtn.addEventListener('click', stopAll);
+
+  function stopAll() {
+    isPlayingAll = false;
+    playAllIndex = -1;
+    speechSynthesis.cancel();
+    clearPlaying();
+    document.querySelectorAll('.btn-play-sentence.playing').forEach(b => b.classList.remove('playing'));
+    endPlayAll();
+    setStatus('');
+  }
+
+  function endPlayAll() {
+    isPlayingAll = false;
+    playAllBtn.style.display = 'inline-flex';
+    stopBtn.style.display = 'none';
+    if (!statusEl.textContent.includes('word')) setStatus('');
+  }
+
+  function setStatus(msg) { statusEl.textContent = msg; }
+
+  // ── Enter key to load ──────────────────────────────────────
+  wordInput.addEventListener('keydown', e => {
+    if (e.ctrlKey && e.key === 'Enter') loadBtn.click();
+  });
+
+  // ── Saved Words panel ───────────────────────────────────────
+  const savedToggle  = document.getElementById('saved-toggle');
+  const savedContent = document.getElementById('saved-content');
+  const savedLabel   = document.getElementById('saved-toggle-label');
+
+  let savedSourceFilter = ''; // '' = show all
+
+  function getUniqueSources() {
+    const set = new Set();
+    Object.values(sentencesDB).forEach(arr =>
+      arr.forEach(s => { const src = sentenceSource(s); if (src) set.add(src); })
+    );
+    return [...set].sort();
+  }
+
+  savedToggle.addEventListener('click', () => {
+    const isOpen = savedToggle.classList.toggle('open');
+    savedContent.style.display = isOpen ? 'block' : 'none';
+    if (isOpen) renderSavedPanel();
+  });
+
+  function renderSavedPanel() {
+    const allWords = Object.keys(sentencesDB).sort();
+    const totalWords = allWords.length;
+    savedLabel.textContent = totalWords
+      ? `💾 Saved sentences — ${totalWords} word${totalWords > 1 ? 's' : ''}`
+      : '💾 Saved sentences';
+
+    if (!savedContent.style.display || savedContent.style.display === 'none') return;
+
+    if (!totalWords) {
+      savedContent.innerHTML = '<div class="saved-empty">No sentences saved yet.</div>';
+      return;
+    }
+
+    // preserve open state of expanded blocks
+    const openWords = new Set(
+      [...savedContent.querySelectorAll('.saved-word-header.open')]
+        .map(el => el.dataset.word)
+    );
+
+    // build source filter bar
+    const sources = getUniqueSources();
+    const filterBar = sources.length
+      ? `<div class="saved-filter-bar">
+          <label class="saved-filter-label" for="source-filter">Filter by source:</label>
+          <select class="saved-filter-select" id="source-filter">
+            <option value="">All sources</option>
+            ${sources.map(src => `<option value="${escHtml(src)}"${savedSourceFilter === src ? ' selected' : ''}>${escHtml(src)}</option>`).join('')}
+          </select>
+        </div>`
+      : '';
+
+    // apply filter: for each word, keep only sentences matching the filter
+    const wordBlocks = allWords.map(word => {
+      const allSents = sentencesDB[word];
+      const sentences = savedSourceFilter
+        ? allSents.map((s, i) => ({ s, i })).filter(({ s }) => sentenceSource(s) === savedSourceFilter)
+        : allSents.map((s, i) => ({ s, i }));
+      if (!sentences.length) return '';
+
+      const isOpen = openWords.has(word);
+      const sentHTML = sentences.map(({ s, idx: origIdx }, _) => {
+        // use original index so delete/play reference the correct entry
+        const idx = savedSourceFilter
+          ? allSents.indexOf(s)
+          : sentences.indexOf(sentences.find(x => x.s === s && x.i === allSents.indexOf(s)));
+        // safer: store original index on the mapped object
+        return null; // placeholder replaced below
+      });
+
+      // rebuild with correct original indices
+      const sentRows = (savedSourceFilter
+        ? allSents.map((s, i) => ({ s, i })).filter(({ s }) => sentenceSource(s) === savedSourceFilter)
+        : allSents.map((s, i) => ({ s, i }))
+      ).map(({ s, i }) => {
+        const highlighted = highlightWord(escHtml(sentenceText(s)), word);
+        const src = sentenceSource(s);
+        return `<div class="sentence-row">
+          <button class="btn-play-sentence sp-btn" data-word="${escHtml(word)}" data-idx="${i}" title="Play">🔊</button>
+          <span class="sentence-text">${highlighted}${src ? `<span class="sentence-source"> — ${escHtml(src)}</span>` : ''}</span>
+          <button class="btn-delete-sentence sd-btn" data-word="${escHtml(word)}" data-idx="${i}" title="Delete">✕</button>
+        </div>`;
+      }).join('');
+
+      const count = sentences.length;
+      return `<div class="saved-word-block">
+        <div class="saved-word-header${isOpen ? ' open' : ''}" data-word="${escHtml(word)}">
+          <span class="saved-word-name">${escHtml(word)}</span>
+          <span class="saved-word-count">${count} sentence${count > 1 ? 's' : ''}</span>
+          <button class="btn-delete-word dw-btn" data-word="${escHtml(word)}" title="Delete all sentences for this word">✕</button>
+          <i class="saved-word-chevron">▾</i>
+        </div>
+        <div class="saved-word-sentences${isOpen ? ' visible' : ''}">${sentRows}</div>
+      </div>`;
+    }).join('');
+
+    const noResults = savedSourceFilter && !wordBlocks.trim()
+      ? '<div class="saved-empty">No sentences from this source.</div>'
+      : '';
+
+    savedContent.innerHTML = filterBar + (wordBlocks || noResults) +
+    `<div class="saved-footer">
+      <button class="btn-clear-all" id="btn-clear-all">Clear all saved sentences</button>
+    </div>`;
+
+    // filter select handler
+    const filterSelect = document.getElementById('source-filter');
+    if (filterSelect) {
+      filterSelect.addEventListener('change', () => {
+        savedSourceFilter = filterSelect.value;
+        renderSavedPanel();
+      });
+    }
+
+    // word header toggle
+    savedContent.querySelectorAll('.saved-word-header').forEach(header => {
+      header.addEventListener('click', e => {
+        if (e.target.closest('.dw-btn')) return;
+        const sentences = header.nextElementSibling;
+        const isOpen = header.classList.toggle('open');
+        sentences.classList.toggle('visible', isOpen);
+      });
+    });
+
+    // play sentence
+    savedContent.querySelectorAll('.sp-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const word = btn.dataset.word;
+        const idx  = +btn.dataset.idx;
+        speakSentence(sentenceText(sentencesDB[word][idx]), btn);
+      });
+    });
+
+    // delete sentence
+    savedContent.querySelectorAll('.sd-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteSentence(btn.dataset.word, +btn.dataset.idx);
+        // refresh card panel if word is currently loaded
+        refreshCardPanel(btn.dataset.word);
+      });
+    });
+
+    // delete whole word
+    savedContent.querySelectorAll('.dw-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const word = btn.dataset.word;
+        delete sentencesDB[word];
+        saveSentencesDB();
+        refreshCardPanel(word);
+      });
+    });
+
+    // clear all
+    document.getElementById('btn-clear-all').addEventListener('click', () => {
+      if (!confirm('Delete all saved sentences?')) return;
+      Object.keys(sentencesDB).forEach(k => delete sentencesDB[k]);
+      saveSentencesDB();
+      wordGrid.querySelectorAll('.word-card').forEach(card => {
+        const word = words[card.dataset.index];
+        if (word) {
+          updateExBtn(word, card.querySelector('.btn-examples'));
+          const panel = card.querySelector('.sentences-panel');
+          if (panel.classList.contains('visible')) renderSentencePanel(word, panel, card.querySelector('.btn-examples'));
+        }
+      });
+    });
+  }
+
+  // refresh a specific card's sentence panel if it's open
+  function refreshCardPanel(word) {
+    wordGrid.querySelectorAll('.word-card').forEach(card => {
+      const cardWord = words[card.dataset.index];
+      if (cardWord && cardWord.toLowerCase() === word.toLowerCase()) {
+        const exBtn = card.querySelector('.btn-examples');
+        updateExBtn(cardWord, exBtn);
+        const panel = card.querySelector('.sentences-panel');
+        if (panel.classList.contains('visible')) renderSentencePanel(cardWord, panel, exBtn);
+      }
+    });
+  }
+
+  // initial render of saved panel label
+  renderSavedPanel();
+</script>
+</body>
+</html>
