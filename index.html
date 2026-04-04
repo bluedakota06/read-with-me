@@ -473,9 +473,23 @@
 
     .saved-footer {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 12px;
+      gap: 8px;
     }
+    .saved-footer-left { display: flex; gap: 8px; }
+    .btn-export, .btn-import {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 14px;
+      font-size: 0.83rem;
+      color: var(--fg);
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-export:hover, .btn-import:hover { background: #f0f4ff; border-color: #7b9cf7; }
     .btn-clear-all {
       background: none;
       border: 1.5px solid var(--border);
@@ -1479,6 +1493,11 @@
 
     savedContent.innerHTML = filterBar + (wordBlocks || noResults) +
     `<div class="saved-footer">
+      <div class="saved-footer-left">
+        <button class="btn-export" id="btn-export">⬇ Export JSON</button>
+        <button class="btn-import" id="btn-import">⬆ Import JSON</button>
+        <input type="file" id="import-file-input" accept=".json" style="display:none">
+      </div>
       <button class="btn-clear-all" id="btn-clear-all">Clear all saved sentences</button>
     </div>`;
 
@@ -1545,6 +1564,68 @@
           if (panel.classList.contains('visible')) renderSentencePanel(word, panel, card.querySelector('.btn-examples'));
         }
       });
+    });
+
+    // export JSON
+    document.getElementById('btn-export').addEventListener('click', () => {
+      const json = JSON.stringify(sentencesDB, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `rwm-sentences-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // import JSON
+    document.getElementById('btn-import').addEventListener('click', () => {
+      document.getElementById('import-file-input').click();
+    });
+    document.getElementById('import-file-input').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const imported = JSON.parse(ev.target.result);
+          if (typeof imported !== 'object' || Array.isArray(imported)) throw new Error('Invalid format');
+          const existingWords = Object.keys(sentencesDB);
+          const mode = existingWords.length > 0
+            ? confirm('Merge with existing sentences?\n\nOK = merge (keep existing, add new)\nCancel = replace all')
+              ? 'merge' : 'replace'
+            : 'replace';
+          if (mode === 'replace') {
+            Object.keys(sentencesDB).forEach(k => delete sentencesDB[k]);
+          }
+          Object.entries(imported).forEach(([word, sentences]) => {
+            if (!Array.isArray(sentences)) return;
+            if (mode === 'merge' && sentencesDB[word]) {
+              // append only sentences not already present (by text)
+              const existing = sentencesDB[word].map(s => sentenceText(s));
+              sentences.forEach(s => {
+                if (!existing.includes(sentenceText(s))) sentencesDB[word].push(s);
+              });
+            } else {
+              sentencesDB[word] = sentences;
+            }
+          });
+          saveSentencesDB();
+          renderSavedPanel();
+          wordGrid.querySelectorAll('.word-card').forEach(card => {
+            const word = words[card.dataset.index];
+            if (word) {
+              updateExBtn(word, card.querySelector('.btn-examples'));
+              const panel = card.querySelector('.sentences-panel');
+              if (panel.classList.contains('visible')) renderSentencePanel(word, panel, card.querySelector('.btn-examples'));
+            }
+          });
+        } catch (err) {
+          alert('Import failed: ' + err.message);
+        }
+        e.target.value = '';
+      };
+      reader.readAsText(file);
     });
   }
 
